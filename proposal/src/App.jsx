@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import "./App.css";
 
 const App = () => {
-  const [name, setName] = useState("");
-  const [mail, setMail] = useState("");
-  const [deal, setDeal] = useState("");
-  const [note, setNote] = useState("");
-  const [num, setNum] = useState("");
-  const [compname, setCompname] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    mail: "",
+    deal: "",
+    note: "",
+    num: "",
+    compname: "",
+  });
   const [service, setService] = useState("");
   const [quant, setQuant] = useState("");
   const [price, setPrice] = useState("");
@@ -18,29 +20,20 @@ const App = () => {
   const before = () => setStep(1);
   const after = () => setStep(3);
   const [loaded, setLoaded] = useState(false);
-  const sub = name.length >= 3 && mail.includes("@") && compname.length >= 3;
+  const sub =
+    form.name.length >= 3 &&
+    form.mail.includes("@") &&
+    form.compname.length >= 3;
   const not = service != "" && quant != "" && price != "";
-  const con = () => console.log({ name, mail, compname, press });
-
-  const edit = (id) => {
-    const handleEdit = press.find((item) => item.id === id);
-    if (handleEdit) {
-      setService(handleEdit.service);
-      setQuant(handleEdit.quant);
-      setPrice(handleEdit.price);
-    }
-  };
+  const con = () => console.log({ form, press });
+  const [modal, setModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("proposal");
     if (saved) {
       const data = JSON.parse(saved);
-      setName(data.name);
-      setMail(data.mail);
-      setDeal(data.deal);
-      setNote(data.note);
-      setNum(data.num);
-      setCompname(data.compname);
+      setForm(data.form);
       setPress(data.press);
     }
     setLoaded(true);
@@ -48,11 +41,8 @@ const App = () => {
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem(
-      "proposal",
-      JSON.stringify({ name, mail, deal, note, num, compname, press }),
-    );
-  }, [name, mail, deal, note, num, compname, press, loaded]);
+    localStorage.setItem("proposal", JSON.stringify({ form, press }));
+  }, [form, press, loaded]);
 
   return (
     <div className="container">
@@ -62,47 +52,59 @@ const App = () => {
           <input
             className="inp"
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={form.name}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, name: e.target.value }))
+            }
           />
 
           <p>email</p>
           <input
             className="inp"
             type="email"
-            value={mail}
-            onChange={(e) => setMail(e.target.value)}
+            value={form.mail}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, mail: e.target.value }))
+            }
           />
-          {!mail.includes("@") && <p>Enter a valid Email</p>}
+          {!form.mail.includes("@") && <p>Enter a valid Email</p>}
 
           <p>Company Name</p>
           <input
             className="inp"
             type="text"
-            value={compname}
-            onChange={(e) => setCompname(e.target.value)}
+            value={form.compname}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, compname: e.target.value }))
+            }
           />
 
           <p>Deal value</p>
           <input
             className="inp"
             type="text"
-            value={deal}
-            onChange={(e) => setDeal(e.target.value)}
+            value={form.deal}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, deal: e.target.value }))
+            }
           />
 
           <p>Notes</p>
           <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            value={form.note}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, note: e.target.value }))
+            }
           ></textarea>
 
           <p>Valid Until</p>
           <input
             type="number"
             placeholder="Enter days"
-            value={num}
-            onChange={(e) => setNum(e.target.value)}
+            value={form.num}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, num: e.target.value }))
+            }
           />
           <button
             className="btn"
@@ -118,6 +120,54 @@ const App = () => {
       )}
       {step === 2 && (
         <div>
+          {modal && (
+            <div className="modal">
+              <div className="inside">
+                <p>Service Input Name</p>
+                <input
+                  type="text"
+                  value={service}
+                  onChange={(e) => setService(e.target.value)}
+                />
+
+                <p>Quantity</p>
+                <input
+                  type="number"
+                  value={quant}
+                  onChange={(e) => setQuant(e.target.value)}
+                />
+
+                <p>Price</p>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+
+                <button
+                  style={{ backgroundColor: "blue" }}
+                  onClick={() => {
+                    setPress(
+                      press.map((item) =>
+                        item.id === editingId
+                          ? { ...item, service, quant, price }
+                          : item,
+                      ),
+                    );
+                    setModal(false);
+                    setEditingId(null);
+
+                    setService("");
+                    setQuant("");
+                    setPrice("");
+                  }}
+                >
+                  submit
+                </button>
+              </div>
+            </div>
+          )}
+
           <p>Service Input Name</p>
           <input
             className="inp"
@@ -154,7 +204,6 @@ const App = () => {
             disabled={!not}
             style={{ backgroundColor: !not ? "gray" : "blue" }}
           >
-            {" "}
             Add
           </button>
 
@@ -164,7 +213,15 @@ const App = () => {
                 service: {item.service} <br />
                 Quantity: {item.quant} <br />
                 Price: {item.price}
-                <button onClick={() => edit(item.id)}>Edit</button>
+                <button
+                  style={{ backgroundColor: "blue" }}
+                  onClick={() => {
+                    setEditingId(item.id);
+                    setModal(true);
+                  }}
+                >
+                  Edit
+                </button>
                 <button
                   style={{ backgroundColor: "blue" }}
                   onClick={() =>
@@ -198,46 +255,48 @@ const App = () => {
       )}
 
       {step === 3 && (
-        <div>
-          <h4>Name: {name}</h4>
-          <h4>email: {mail}</h4>
-          <h4> company: {compname}</h4>
-          <h4>Deal Value: {deal}</h4>
-          <p>Notes: {note}</p>
-          <p>Valid until {num} Days</p>
+        <div className="final">
+          <div className="toot">
+            <h4>Name: {form.name}</h4>
+            <h4>email: {form.mail}</h4>
+            <h4> company: {form.compname}</h4>
+            <h4>Deal Value: {form.deal}</h4>
+            <p>Notes: {form.note}</p>
+            <p>Valid until {form.num} Days</p>
 
-          <ul>
-            {press.map((item, index) => (
-              <li key={index}>
-                {item.service} X quantity: {item.quant} X price: {item.price} ={" "}
-                {item.quant * item.price}
-              </li>
-            ))}
-          </ul>
+            <ul>
+              {press.map((item, index) => (
+                <li key={index}>
+                  {item.service} X quantity: {item.quant} X price: {item.price}{" "}
+                  = {item.quant * item.price}
+                </li>
+              ))}
+            </ul>
 
-          <p className="total">
-            Grand Total:
-            {press.reduce(
-              (accumulator, currentItem) =>
-                accumulator + currentItem.quant * currentItem.price,
-              0,
-            )}
-          </p>
+            <p className="total">
+              Grand Total:
+              {press.reduce(
+                (accumulator, currentItem) =>
+                  accumulator + currentItem.quant * currentItem.price,
+                0,
+              )}
+            </p>
 
-          <button
-            className="btn"
-            style={{ backgroundColor: "blue" }}
-            onClick={handle}
-          >
-            before
-          </button>
-          <button
-            className="btn"
-            style={{ backgroundColor: "blue" }}
-            onClick={con}
-          >
-            submit
-          </button>
+            <button
+              className="but"
+              style={{ backgroundColor: "blue" }}
+              onClick={handle}
+            >
+              before
+            </button>
+            <button
+              className="but"
+              style={{ backgroundColor: "blue" }}
+              onClick={con}
+            >
+              submit
+            </button>
+          </div>
         </div>
       )}
     </div>

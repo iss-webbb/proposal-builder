@@ -1,3 +1,7 @@
+body {
+    font: 1em sans-serif;
+}
+
 .container {
     display: grid;  
     place-items: center;
@@ -34,5 +38,38 @@ button{
     border-radius: 8px;
     width: 103%;
     color: white;
-    background-color: rgb(37, 52, 146);
+    width: 25%;
+    background-color: rgba(0, 0, 255, 0.647);
+}
+
+.modal {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    height: 40%;
+    width: 20%;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 3px 5px;
+}
+
+.final {
+    background-color: rgba(0, 208, 255, 0.769);
+    height: 90%;
+    width: 70%;
+    flex: column;
+    border-radius: 10px;
+}
+
+.toot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: start;
+    margin-left: 30px;
+}
+
+.but {
+    width: 80%;
 }
